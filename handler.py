@@ -1,8 +1,12 @@
+from decimal import Decimal
+
+from django.utils.translation import ugettext_lazy as _
+
 from mezzanine.conf import settings
 
 from cartridge.shop.utils import set_shipping
 
-from tax.utils import set_salestax
+from cartridgetax.utils import set_salestax
 
 def default_billship_handler(request, order_form):
     """
@@ -36,9 +40,12 @@ def default_billship_handler(request, order_form):
         settings.use_editable()
         set_shipping(request, _("Flat rate shipping"),
                      settings.SHOP_DEFAULT_SHIPPING_VALUE)
-    
+
     if not request.session.get('tax_shipping_address'):
         settings.use_editable()
         set_salestax(request, _("Flat sales tax"),
-                request.cart.order_total * settings.TAX_FLAT_RATE)
-
+                request.cart.total_price() * Decimal(settings.TAX_FLAT_RATE))
+    #else:
+        #settings.use_editable()
+        #set_salestax(request, _('Tax shipping address'),
+                #tax_calculator(request.cart.

@@ -8,15 +8,15 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding field 'Product.taxable'
-        db.add_column('shop_product', 'taxable',
-                      self.gf('django.db.models.fields.BooleanField')(default=True),
+        # Adding field 'Product.tic'
+        db.add_column('shop_product', 'tic',
+                      self.gf('django.db.models.fields.CharField')(max_length=5, default='00000', blank=True),
                       keep_default=False)
 
 
     def backwards(self, orm):
-        # Deleting field 'Product.taxable'
-        db.delete_column('shop_product', 'taxable')
+        # Deleting field 'Product.tic'
+        db.delete_column('shop_product', 'tic')
 
 
     models = {
@@ -188,7 +188,8 @@ class Migration(SchemaMigration):
             'sku': ('cartridge.shop.fields.SKUField', [], {'max_length': '20', 'unique': 'True', 'null': 'True', 'blank': 'True'}),
             'slug': ('django.db.models.fields.CharField', [], {'max_length': '2000', 'null': 'True', 'blank': 'True'}),
             'status': ('django.db.models.fields.IntegerField', [], {'default': '2'}),
-            'taxable': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'tic': ('django.db.models.fields.CharField', [],
+                {'max_length': '5', 'default': "''", 'blank': 'True'}),
             'title': ('django.db.models.fields.CharField', [], {'max_length': '500'}),
             'unit_price': ('cartridge.shop.fields.MoneyField', [], {'null': 'True', 'max_digits': '10', 'decimal_places': '2', 'blank': 'True'}),
             'upsell_products': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'upsell_products_rel_+'", 'blank': 'True', 'to': "orm['shop.Product']"})

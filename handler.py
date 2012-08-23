@@ -8,6 +8,8 @@ from cartridge.shop.utils import set_shipping
 
 from cartridgetax.utils import set_salestax
 
+from taxcloud.api import Client
+
 def default_billship_handler(request, order_form):
     """
     My planned US implementation will feature the ability to use either the
@@ -36,6 +38,8 @@ def default_billship_handler(request, order_form):
     ``cartridge.shop.utils.set_shipping``. The Cart object is also
     accessible via ``request.cart``
     """
+    api_key = settings.TAXCLOUD_API_KEY
+    api_id = settings.TAXCLOUD_API_ID
     if not request.session.get('free_shipping'):
         settings.use_editable()
         set_shipping(request, _("Flat rate shipping"),
@@ -44,8 +48,10 @@ def default_billship_handler(request, order_form):
     if not request.session.get('tax_shipping_address'):
         settings.use_editable()
         set_salestax(request, _("Flat sales tax"),
-        request.cart.total_price() * Decimal(settings.TAX_FLAT_RATE))
-    #else:
-        #settings.use_editable()
-        #set_salestax(request, _('Tax shipping address'),
-        #tax_calculator(request.cart.
+                    request.cart.total_price() * Decimal(settings.TAX_FLAT_RATE))
+    else:
+        settings.use_editable()
+        Client.lookup(apiLoginID=api_id, apiKey=api_key,
+                request.user.id, request.cart.id, request.cart.items, )
+        set_salestax(request, _('Tax shipping address'),
+                    tax_calculator(request.cart.

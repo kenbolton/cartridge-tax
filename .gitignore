@@ -1,40 +1,7 @@
-# Compiled Python
 *.pyc
-
-# ignore emacs and vim tmp files
-.ropeproject
-.*.*.sw*
-\#*\#
-*~
-
-# ignore development db files
-*.sqlite
+*.pyo
 *.db
-*.sql
-
-*.bak
-
-# ignore environment and local settings files
-local_settings.py
-local-env/
-env/
-local_requirements.pip
-
-cover/
-source/cover/
-share/
-staticfiles/
-source/bldg92/static/
-source/bldg92/media/
-source/bny/static/CACHE
-lib/
-src/
-.coverage
 .DS_Store
-.Python
-bin/
-docs/
-include/
-share/applications/bpython.desktop
-*.1
-*.5
+.coverage
+local_settings.py
+static/

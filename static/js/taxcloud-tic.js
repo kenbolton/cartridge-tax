@@ -29,7 +29,7 @@ var submitMethod = "GET"; //set to GET or POST based upon the submitTarget's exp
 */
 
 //currentTic must be declared/set, even if TIC has not already been specified.
-var currentTic = $('#id_tic').val();
+var currentTic = $('#id_tic').val() || '';
 
 //the ID of the HTML form field to be replaced
 var fieldID = "id_tic";

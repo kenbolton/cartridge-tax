@@ -1,12 +1,41 @@
-My planned US implementation will feature the ability to use either the local rate or the rate at the shipping address. A sketch of this implementation follows.
+# Cartridgetax
 
-Create the following settings in a module's defaults.py:
-* TAX_SHIPPING_ADDRESS boolean
-* TAX_API_KEY e.g. api.taxcloud.net for the US
-* TAX_RATE decimal, for just paying local sales tax
-* TAX_DISCOUNT_CATEGORIES list of shop Categories, e.g. Clothing which is sometimes taxed at a discount rate in NYC
-* TAX_DISCOUNT_RATE decimal percent discount for discounted categories
+An implementation of tax for Cartridge using the TaxCloud.net api.
 
-Add 'taxable' BooleanField to the Product model through EXTRA_MODEL_FIELDS.
-Write a billship_handler that ties it all together.
+## Billing/Shipping Handler
 
+Add the following to your settings:
+```
+SHOP_HANDLER_BILLING_SHIPPING = \
+                "cartridgetax.checkout.tax_billship_handler"
+```
+
+## Extra model fields
+
+Below is an example of settings.EXTRA_MODEL_FIELDS. Be sure to add these
+tuples to your own customized EXTRA_MODEL_FIELDS.
+```
+EXTRA_MODEL_FIELDS = (
+        (
+            "cartridge.shop.models.Product.tic",
+            "CharField",
+            ("Taxability Information Code",),
+            {"max_length":"5", "blank": True, "default":"00000", },
+            ),
+        )
+```
+
+
+## Registered Settings
+
+* TAX_SHOP_ADDRESS
+* TAX_SHOP_ADDRESS2
+* TAX_SHOP_CITY
+* TAX_SHOP_STATE
+* TAX_SHOP_POSTCODE
+* TAX_SHOP_POSTCODE_PLUS4
+* TAX_FLAT_RATE
+* TAX_SHIPPING_ADDRESS
+* TAX_SHIPPING
+* TAX_TAXCLOUD_API_ID
+* TAX_TAXCLOUD_API_KEY

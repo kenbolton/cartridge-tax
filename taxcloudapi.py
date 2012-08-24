@@ -4,7 +4,7 @@ import suds
 from django.conf import settings
 
 
-class Client(object):
+class TaxCloudClient(object):
     """Client for TaxCloud's SOAP API"""
     url = "https://api.taxcloud.net/1.0/?wsdl"
     client = suds.client.Client(url)

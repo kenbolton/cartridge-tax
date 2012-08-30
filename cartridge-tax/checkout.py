@@ -29,20 +29,25 @@ def tax_billship_handler(request, order_form):
         set_shipping(request, _("Flat rate shipping"),
                 settings.SHOP_DEFAULT_SHIPPING_VALUE)
 
-
     if settings.TAX_SHIPPING:
         tax_shipping = \
                 Decimal(str(request.session.get('shipping_total')))
     else:
         tax_shipping = Decimal(0)
-
-    if not settings.TAX_SHIPPING_ADDRESS:
-        tax_rate = Decimal(settings.TAX_FLAT_RATE) * Decimal(str(.01))
-        total_tax = (request.cart.total_price() + tax_shipping) * \
+    
+    if not settings.TAX_USE_TAXCLOUD:
+        if settings.TAX_OUT_OF_STATE or \
+                request.session.get('order')['shipping_detail_state'] \
+                    == settings.TAX_SHOP_STATE:
+            # Use the flat rate
+            tax_rate = Decimal(settings.TAX_FLAT_RATE) * Decimal(str(.01))
+            total_tax = (request.cart.total_price() + tax_shipping) * \
                 Decimal(tax_rate)
-        set_salestax(request, _("Flat sales tax"),
-                total_tax)
-    else:
+            set_salestax(request, _("Flat sales tax"), total_tax)
+        else:
+            # Sweet: no sales tax
+            set_salestax(request, _("Out of state"), Decimal(0))
+    else:  # Use TaxCloud.net SOAP service.
         api_key = settings.TAXCLOUD_API_KEY
         api_id = settings.TAXCLOUD_API_ID
         order = request.session.get('order')
@@ -62,6 +67,7 @@ def tax_billship_handler(request, order_form):
                 order['shipping_detail_street'],
                 '',
                 order['shipping_detail_city'],
+                order['shipping_detail_state'],
                 shipping_detail_postcode,
                 shipping_detail_postcode_plus4,
                 ]

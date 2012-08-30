@@ -19,10 +19,16 @@ EXTRA_MODEL_FIELDS = (
         (
             "cartridge.shop.models.Product.tic",
             "CharField",
-            ("Taxability Information Code",),
+            (u"Taxability Information Code",),
             {"max_length":"5", "blank": True, "default":"00000", },
             ),
-        )
+        ),
+        (
+            "cartridge.shop.models.Order.total_tax",
+            "MoneyField",
+            (u"Tax Total",),
+            ),
+)
 ```
 
 

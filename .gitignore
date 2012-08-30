@@ -2,6 +2,6 @@
 *.pyo
 *.db
 .DS_Store
-.coverage
-local_settings.py
-static/
+build/
+dist/
+cartridge_tax.egg-info/

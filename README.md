@@ -1,8 +1,13 @@
 # cartridge-tax
 
-An implementation of sales tax for Cartridge. A simple flat sales or
-value-added tax can be applied. Alternatively, tax can be charged to the
-shipping address using the TaxCloud.net api for US retailers. 
+An implementation of sales tax for Cartridge. A flat sales or
+value-added tax can be applied. Please fork!
+
+## ToDo
+
+The big pending feature is to calculate tax to the shipping address
+using the TaxCloud.net api for US retailers.
+
 
 ## Installation
 
@@ -53,5 +58,3 @@ EXTRA_MODEL_FIELDS = (
 * TAX_TAXCLOUD_API_KEY
 
 
-## Contributores
-(your name here!)

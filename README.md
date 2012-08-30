@@ -1,19 +1,25 @@
-# Cartridgetax
+# cartridge-tax
 
-An implementation of tax for Cartridge using the TaxCloud.net api.
+An implementation of sales tax for Cartridge. A simple flat sales or
+value-added tax can be applied. Alternatively, tax can be charged to the
+shipping address using the TaxCloud.net api for US retailers. 
 
-## Billing/Shipping Handler
+## Installation
+
+Add `'cartridge-tax'` to your settings.INSTALLED_APPS.
+
+### Billing/Shipping Handler
 
 Add the following to your settings:
 ```
 SHOP_HANDLER_BILLING_SHIPPING = \
-                "cartridgetax.checkout.tax_billship_handler"
+                "cartridge-tax.checkout.tax_billship_handler"
 ```
 
-## Extra model fields
+### Extra model fields
 
 Below is an example of settings.EXTRA_MODEL_FIELDS. Be sure to add these
-tuples to your own customized EXTRA_MODEL_FIELDS.
+tuples to your own EXTRA_MODEL_FIELDS.
 ```
 EXTRA_MODEL_FIELDS = (
         (
@@ -45,3 +51,7 @@ EXTRA_MODEL_FIELDS = (
 * TAX_SHIPPING
 * TAX_TAXCLOUD_API_ID
 * TAX_TAXCLOUD_API_KEY
+
+
+## Contributores
+(your name here!)

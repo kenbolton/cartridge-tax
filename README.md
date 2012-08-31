@@ -1,6 +1,6 @@
 # cartridge-tax
 
-cartridge-tax is an implementation of sales tax for light-weight Django
+cartridge-tax is an implementation of sales tax for the light-weight Django
 ecommerce application Cartridge. A flat sales or value-added tax can be 
 applied to in-state or all sales.
 

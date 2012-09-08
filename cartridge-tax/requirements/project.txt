@@ -1,2 +1,0 @@
-cartridge>=0.6.0
-suds==0.4

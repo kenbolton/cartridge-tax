@@ -37,6 +37,7 @@ SHOP_HANDLER_BILLING_SHIPPING = \
 
 Below is an example of settings.EXTRA_MODEL_FIELDS. Be sure to add these
 tuples to your own EXTRA_MODEL_FIELDS.
+
 ```
 EXTRA_MODEL_FIELDS = (
         (
@@ -45,11 +46,11 @@ EXTRA_MODEL_FIELDS = (
             (u"Taxability Information Code",),
             {"max_length":"5", "blank": True, "default":"00000", },
             ),
-        ),
         (
             "cartridge.shop.models.Order.total_tax",
-            "MoneyField",
+            "cartridge.shop.fields.MoneyField",
             (u"Tax Total",),
+            {},
             ),
 )
 ```

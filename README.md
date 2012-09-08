@@ -1,6 +1,6 @@
-# cartridge-tax
+# cartridge_tax
 
-cartridge-tax is an implementation of sales tax for the light-weight Django
+cartridge_tax is an implementation of sales tax for the light-weight Django
 ecommerce application Cartridge. A flat sales or value-added tax can be 
 applied to in-state or all sales.
 
@@ -16,7 +16,7 @@ using the TaxCloud.net api for US retailers.
 
 Clone (or fork!) this repository and run `python setup.py install `
 
-uAdd `'cartridge-tax'` to your settings.INSTALLED_APPS before
+Add `'cartridge_tax'` to your settings.INSTALLED_APPS before
 `'cartridge.shop'`.
 
 Set up your tax information in the admin configuration settings,
@@ -30,7 +30,7 @@ values in that dict should match the style in 'Shop State'.
 Add the following to your settings:
 ```
 SHOP_HANDLER_BILLING_SHIPPING = \
-                "cartridge-tax.checkout.tax_billship_handler"
+                "cartridge_tax.checkout.tax_billship_handler"
 ```
 
 ### Extra model fields

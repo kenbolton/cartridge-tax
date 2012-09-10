@@ -56,6 +56,24 @@ EXTRA_MODEL_FIELDS = (
 )
 ```
 
+### Custom OrderForm
+An example for the US.
+
+Assuming your app is named `app`, add `SHOP_CHECKOUT_FORM_CLASS =
+'app.forms.OrderForm'` to settings. Create app/forms.py, and fill with:
+
+```
+from django.contrib.localflavor.us.forms import USStateSelect
+
+from cartridge.shop.forms import OrderForm
+
+
+class OrderForm(OrderForm):
+    def __init__(self,*args,**kwrds):
+        super(OrderForm, self).__init__(*args, **kwrds)
+        self.fields['billing_detail_state'].widget = USStateSelect()
+        self.fields['shipping_detail_state'].widget = USStateSelect()
+```
 
 ## Registered Settings
 

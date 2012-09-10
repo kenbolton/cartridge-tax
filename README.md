@@ -22,7 +22,7 @@ Add `'cartridge_tax'` to your settings.INSTALLED_APPS before
 Set up your tax information in the admin configuration settings,
 /admin/conf/setting/. Note the value you put in 'Shop State'. You will
 need to inject a "choices" dict into
-`cartridge.forms.OrderForm['fields']['shipping_detail_state']`. The
+`cartridge.shop.forms.OrderForm['fields']['shipping_detail_state']`. The
 values in that dict should match the style in 'Shop State'.
 
 ### Billing/Shipping Handler
@@ -48,9 +48,10 @@ EXTRA_MODEL_FIELDS = (
             ),
         (
             "cartridge.shop.models.Order.total_tax",
-            "cartridge.shop.fields.MoneyField",
+            "DecimalField",
             (u"Tax Total",),
-            {},
+            {"null": True, "blank": True, "max_digits": 10,
+                    "decimal_places": 2},
             ),
 )
 ```

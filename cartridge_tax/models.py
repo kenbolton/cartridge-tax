@@ -6,9 +6,6 @@ from mezzanine.conf import settings
 
 from cartridge.shop.models import Order, SelectedProduct
 
-from taxcloudapi import TaxCloudClient
-
-
 def setup(self, request):
     """
     Set order fields that are stored in the session, item_total, tax_total,
@@ -27,8 +24,8 @@ def setup(self, request):
         self.total += self.shipping_total
     if self.discount_total is not None:
         self.total -= self.discount_total
-    if self.total_tax is not None:
-        self.total += self.total_tax
+    if self.tax_total is not None:
+        self.total += self.tax_total
     self.save()  # We need an ID before we can add related items.
     for item in request.cart:
         product_fields = [f.name for f in SelectedProduct._meta.fields]

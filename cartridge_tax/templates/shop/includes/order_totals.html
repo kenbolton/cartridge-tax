@@ -27,7 +27,7 @@
 	{% endif %}
   {% if tax_total %}
 	<div>
-	    <label>
+      <label>
 	    {% if tax_type %}
 	    {{ tax_type }}:
 	    {% else %}
@@ -35,7 +35,19 @@
 	    {% endif %}
 	    </label> {{ tax_total|currency }}
 	</div>
+
+  <div class="total"><label>{% trans "Total" %}:</label> {{ order_total|currency }}</div>
+  {% else %}
+	<div>
+      <label>
+	    {% if order.tax_type %}
+	    {{ order.tax_type }}:
+	    {% else %}
+	    {% trans "Sales Tax" %}:
+	    {% endif %}
+	    </label> {{ order.tax_total|currency }}
+	</div>
+  <div class="total"><label>{% trans "Total" %}:</label> {{ order.total|currency }}</div>
 	{% endif %}
 
-	<div class="total"><label>{% trans "Total" %}:</label> {{ order_total|currency }}</div>
 </div>

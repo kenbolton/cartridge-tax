@@ -23,14 +23,17 @@ Set up your tax information in the admin configuration settings,
 /admin/conf/setting/. Note the value you put in 'Shop State'. You will
 need to inject a "choices" dict into
 `cartridge.shop.forms.OrderForm['fields']['shipping_detail_state']`. The
-values in that dict should match the style in 'Shop State'.
+values in that dict should match the style in 'Shop State'. See the
+example below in `Custom OrderForm`.
 
-### Billing/Shipping Handler
+### Billing/Shipping and Order Handlers
 
 Add the following to your settings:
 ```
 SHOP_HANDLER_BILLING_SHIPPING = \
                 "cartridge_tax.checkout.tax_billship_handler"
+
+SHOP_HANDLER_ORDER = "cartridge_tax.checkout.tax_order_handler"
 ```
 
 ### Extra model fields
@@ -53,26 +56,30 @@ EXTRA_MODEL_FIELDS = (
             {"null": True, "blank": True, "max_digits": 10,
                     "decimal_places": 2},
             ),
+        (
+            "cartridge.shop.models.Order.tax_type",
+            "CharField",
+            (u"Tax Type",),
+            {"blank": True, "max_length": "20", "default":"Flat sales tax"},
+            ),
 )
 ```
 
 ### Custom OrderForm
 An example for the US.
 
-Assuming your app is named `app`, add `SHOP_CHECKOUT_FORM_CLASS =
-'app.forms.OrderForm'` to settings. Create app/forms.py, and fill with:
+Assuming your app is named `app`, add `SHOP_CHECKOUT_FORM_CLASS = 'app.forms.OrderForm'`
+to settings. Create `app/forms.py`, and fill with:
 
 ```
-from django.contrib.localflavor.us.forms import USStateSelect
-
-from cartridge.shop.forms import OrderForm
-
-
 class OrderForm(OrderForm):
-    def __init__(self,*args,**kwrds):
-        super(OrderForm, self).__init__(*args, **kwrds)
-        self.fields['billing_detail_state'].widget = USStateSelect()
-        self.fields['shipping_detail_state'].widget = USStateSelect()
+    def __init__(self, request, step, *args,**kwrds):
+        first = step == checkout.CHECKOUT_STEP_FIRST
+        super(OrderForm, self).__init__(request, step, *args, **kwrds)
+        if settings.SHOP_CHECKOUT_STEPS_SPLIT:
+            if first:
+                self.fields['billing_detail_state'].widget = USStateSelect()
+                self.fields['shipping_detail_state'].widget = USStateSelect()
 ```
 
 ## Registered Settings

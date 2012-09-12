@@ -7,6 +7,7 @@ from mezzanine.conf import settings
 
 from cartridge.shop.models import CartItem, Order, Product, ProductVariation
 from cartridge.shop.utils import set_shipping
+from cartridge.shop.checkout import CheckoutError
 
 from utils import set_salestax
 
@@ -34,61 +35,120 @@ def tax_billship_handler(request, order_form):
                 Decimal(str(request.session.get('shipping_total')))
     else:
         tax_shipping = Decimal(0)
-    
+
+    request.session["tax_total"] = 0
     if not settings.TAX_USE_TAXCLOUD:
+        #request.session['tax_total'] = 0
         if settings.TAX_OUT_OF_STATE or \
                 request.session.get('order')['shipping_detail_state'] \
                     == settings.TAX_SHOP_STATE:
             # Use the flat rate
             tax_rate = Decimal(settings.TAX_FLAT_RATE) * Decimal(str(.01))
-            total_tax = (request.cart.total_price() + tax_shipping) * \
+            tax_total = (request.cart.total_price() + tax_shipping) * \
                 Decimal(tax_rate)
-            set_salestax(request, _("Flat sales tax"), total_tax)
+            set_salestax(request, _("Flat sales tax"), tax_total)
         else:
             # Sweet: no sales tax
             set_salestax(request, _("Out of state"), Decimal(0))
     else:  # Use TaxCloud.net SOAP service.
+        #request.session['tax_total'] = 0
         api_key = settings.TAXCLOUD_API_KEY
         api_id = settings.TAXCLOUD_API_ID
-        order = request.session.get('order')
-        settings.use_editable()
-        origin = (settings.TAX_SHOP_ADDRESS,
-                settings.TAX_SHOP_ADDRESS2, settings.TAX_SHOP_CITY,
-                settings.TAX_SHOP_STATE, settings.TAX_SHOP_POSTCODE,
-                settings.TAX_SHOP_POSTCODE_PLUS4,)
-        if len(str(order['shipping_detail_postcode']).replace('-','')) == 9:
-            shipping_detail_postcode_plus4 = str(order['shipping_detail_postcode'])[:-4]
-            shipping_detail_postcode = str(order['shipping_detail_postcode'])[0:4]
-        else:
-            shipping_detail_postcode = str(order['shipping_detail_postcode'])[0:4]
-            shipping_detail_postcode_plus4 = '0000'
-
-        destination = [
-                order['shipping_detail_street'],
-                '',
-                order['shipping_detail_city'],
-                order['shipping_detail_state'],
-                shipping_detail_postcode,
-                shipping_detail_postcode_plus4,
-                ]
-        cartItems = []
-        items = CartItem.objects.filter(cart_id=request.session.get('cart'))
-        for idx, item in enumerate(items):
-            index = idx
-            itemId = str(item.sku)
-            productVariation = ProductVariation.objects.get(sku=itemId)
-            product = Product.objects.get(id=productVariation.product_id)
-            tic = str(product.tic)
-            price = str(item.unit_price)
-            quantity = item.quantity
-            cartItem = (index, itemId, tic, price, quantity)
-            cartItems.append(cartItem)
-        shipping = (len(items) + 1, 'shipping', '11010',
-                str(tax_shipping), 1)
-        cartItems.append(shipping)
         url = "https://api.taxcloud.net/1.0/?wsdl"
         client = suds.client.Client(url)
-        tax_total = client.service.Lookup(api_id, api_key,
-                request.user.id, request.session.get('cart'),
-                cartItems, origin, destination)
-        set_salestax(request, tax_type, tax_total)
+        order = request.session.get('order')
+        settings.use_editable()
+        origin = client.factory.create('Address')
+        origin.Address1 = settings.TAX_SHOP_ADDRESS
+        origin.Address2 = settings.TAX_SHOP_ADDRESS2
+        origin.City = settings.TAX_SHOP_CITY
+        origin.State = settings.TAX_SHOP_STATE
+        origin.Zip5 = settings.TAX_SHOP_POSTCODE
+        origin.Zip4 = settings.TAX_SHOP_POSTCODE_PLUS4
+        if len(str(order['shipping_detail_postcode']).replace('-','')) == 9:
+            shipping_detail_postcode_plus4 = str(order['shipping_detail_postcode'])[:-4]
+            shipping_detail_postcode = str(order['shipping_detail_postcode'])[0:5]
+        else:
+            shipping_detail_postcode = str(order['shipping_detail_postcode'])[0:5]
+            shipping_detail_postcode_plus4 = '0000'
+        destination = client.factory.create('Address')
+        destination.Address1 = order['shipping_detail_street']
+        destination.Address2 = ''
+        destination.City = order['shipping_detail_city']
+        destination.State = order['shipping_detail_state']
+        destination.Zip5 = shipping_detail_postcode
+        destination.Zip4 = shipping_detail_postcode_plus4
+        ArrayOfCartItem = client.factory.create('ArrayOfCartItem')
+        items = CartItem.objects.filter(cart_id=request.session.get('cart'))
+        for idx, item in enumerate(items):
+            cartItem = client.factory.create('CartItem')
+            cartItem.Index = idx + 1
+            cartItem.ItemID = str(item.sku)
+            productVariation = ProductVariation.objects.get(sku=item.sku)
+            product = Product.objects.get(id=productVariation.product_id)
+            cartItem.TIC = int(product.tic)
+            cartItem.Price = float(item.unit_price)
+            cartItem.Qty = float(item.quantity)
+            ArrayOfCartItem.CartItem.append(cartItem)
+        shipping = client.factory.create('CartItem')
+        shipping.Index = len(items) + 1
+        shipping.ItemID = str('shipping')
+        shipping.TIC = int(11010)
+        shipping.Price = float(tax_shipping)
+        shipping.Qty = float(1)
+        ArrayOfCartItem.CartItem.append(shipping)
+        cartID = str.join(
+                str(request.cookie.get('sessionid')),
+                '-' + str(request.session.get('cart'))
+            )
+        try:
+            result = client.service.Lookup(str(api_id), str(api_key),
+                str(request.user.id),
+                cartID,
+                ArrayOfCartItem, origin, destination, False
+                )
+            tax_total = 0
+        except:
+            raise CheckoutError('Unable to contact the TaxCloud server.')
+        if str(result.ResponseType) == 'OK' and \
+                int(result.CartID) == int(request.session.get('cart')):
+            for CartItemResponse in result.CartItemsResponse[0]:
+                tax_total += CartItemResponse.TaxAmount
+        else:
+            raise CheckoutError(result.Messages)
+        print tax_total
+        set_salestax(request, _("Sales tax for shipping address"), tax_total)
+
+
+def tax_order_handler(request, order_form, order):
+    """
+    Default order handler - called when the order is complete and
+    contains its final data. Implement your own and specify the path
+    to import it from via the setting ``SHOP_HANDLER_ORDER``.
+    """
+    order.tax_total = Decimal(str(request.session.get('tax_total')))
+    order.total += order.tax_total
+    api_key = settings.TAXCLOUD_API_KEY
+    api_id = settings.TAXCLOUD_API_ID
+    url = "https://api.taxcloud.net/1.0/?wsdl"
+    client = suds.client.Client(url)
+    cartID = str.join(
+                str(request.cookie.get('sessionid')),
+                '-' + str(request.session.get('cart'))
+        )
+    result = client.service.Authorized(
+                str(api_id),  # xs:string apiLoginID,
+                str(api_key),  # xs:string apiKey
+                str(request.user.id),  # xs:string customerID
+                cartID,  # xs:string cartID
+                str(order.id),  # xs:string orderID
+                order.time,  # xs:dateTime dateAuthorized
+                )
+    if str(result.ResponseType) == 'OK':
+        captured = client.service.Captured(str(api_id), str(api_key),
+                str(orderid))
+    else:
+        raise CheckoutError(result.Messages)
+    order.save()
+
+

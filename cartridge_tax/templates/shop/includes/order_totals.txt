@@ -1,4 +1,5 @@
-{% load shop_tags i18n %}{% if discount_total or shipping_total %}
+{% load tax_tags i18n %}{% if discount_total or shipping_total %}
+
 {% trans "Sub total" %}: {{ item_total|currency }}
 {% endif %}{% if discount_total %}
 {% if discount_type %}{{ discount_type }}{% else %}{% trans "Discount" %}{% endif %}: {{ discount_total|currency }} {{ discount_total|currency }}
@@ -6,6 +7,11 @@
 {% if shipping_type %}{{ shipping_type }}{% else %}{% trans "Shipping" %}{% endif %}: {{ shipping_total|currency }} {{ shipping_total|currency }}
 {% endif %}{% if tax_total %}
 {% if tax_type %}{{ tax_type }}{% else %}{% trans "Sales Tax" %}{% endif %}: {{ tax_total|currency }} {{ tax_total|currency }}
-{% endif %}{% trans "Total" %}: {{ order_total|currency }}
+{% trans "Total" %}: {{ order_total|currency }}
+{% else %}
+{% if order.tax_type %}{{ order.tax_type }}{% else %}{% trans "SalesTax" %}
+{% endif %}: {{ order.tax_total|currency }} {{ order.tax_total|currency }}
+{% trans "Total" %}: {{ order.order_total|currency }}
+{% endif %}
 
 

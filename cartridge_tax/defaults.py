@@ -31,8 +31,9 @@ register_setting(
 
 register_setting(
         name="TAX_SHOP_STATE",
-        label=_("Shop State"),
-        description=_("State of the originating shipping address."),
+        label=_("Shop State/Province"),
+        description=_("State of the originating shipping address. This \
+            should be the abbreviated form, e.g. 'NY'."),
         editable=True,
         default="",
         )

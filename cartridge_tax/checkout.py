@@ -36,9 +36,10 @@ def tax_billship_handler(request, order_form):
     else:
         tax_shipping = Decimal(0)
 
-    request.session["tax_total"] = 0
+    if request.session.get('tax_total'):
+        del request.session['tax_total']
+
     if not settings.TAX_USE_TAXCLOUD:
-        #request.session['tax_total'] = 0
         if settings.TAX_OUT_OF_STATE or \
                 request.session.get('order')['shipping_detail_state'] \
                     == settings.TAX_SHOP_STATE:
@@ -52,8 +53,8 @@ def tax_billship_handler(request, order_form):
             set_salestax(request, _("Out of state"), Decimal(0))
     else:  # Use TaxCloud.net SOAP service.
         #request.session['tax_total'] = 0
-        api_key = settings.TAXCLOUD_API_KEY
-        api_id = settings.TAXCLOUD_API_ID
+        api_key = settings.TAX_TAXCLOUD_API_KEY
+        api_id = settings.TAX_TAXCLOUD_API_ID
         url = "https://api.taxcloud.net/1.0/?wsdl"
         client = suds.client.Client(url)
         order = request.session.get('order')
@@ -98,9 +99,11 @@ def tax_billship_handler(request, order_form):
         shipping.Qty = float(1)
         ArrayOfCartItem.CartItem.append(shipping)
         cartID = str.join(
-                str(request.cookie.get('sessionid')),
+                str(request.COOKIES.get('sessionid')),
                 '-' + str(request.session.get('cart'))
             )
+        request.session["order"]["cartID"] = cartID
+        request.session.modified = True
         try:
             result = client.service.Lookup(str(api_id), str(api_key),
                 str(request.user.id),
@@ -111,7 +114,7 @@ def tax_billship_handler(request, order_form):
         except:
             raise CheckoutError('Unable to contact the TaxCloud server.')
         if str(result.ResponseType) == 'OK' and \
-                int(result.CartID) == int(request.session.get('cart')):
+                result.CartID == cartID:
             for CartItemResponse in result.CartItemsResponse[0]:
                 tax_total += CartItemResponse.TaxAmount
         else:
@@ -128,27 +131,33 @@ def tax_order_handler(request, order_form, order):
     """
     order.tax_total = Decimal(str(request.session.get('tax_total')))
     order.total += order.tax_total
-    api_key = settings.TAXCLOUD_API_KEY
-    api_id = settings.TAXCLOUD_API_ID
-    url = "https://api.taxcloud.net/1.0/?wsdl"
-    client = suds.client.Client(url)
-    cartID = str.join(
-                str(request.cookie.get('sessionid')),
-                '-' + str(request.session.get('cart'))
-        )
-    result = client.service.Authorized(
-                str(api_id),  # xs:string apiLoginID,
-                str(api_key),  # xs:string apiKey
-                str(request.user.id),  # xs:string customerID
-                cartID,  # xs:string cartID
-                str(order.id),  # xs:string orderID
-                order.time,  # xs:dateTime dateAuthorized
-                )
-    if str(result.ResponseType) == 'OK':
-        captured = client.service.Captured(str(api_id), str(api_key),
-                str(orderid))
-    else:
-        raise CheckoutError(result.Messages)
+    if settings.TAX_USE_TAXCLOUD_AUTHORIZATION:
+        api_key = settings.TAX_TAXCLOUD_API_KEY
+        api_id = settings.TAX_TAXCLOUD_API_ID
+        url = "https://api.taxcloud.net/1.0/?wsdl"
+        client = suds.client.Client(url)
+        cartID = str.join(
+                    str(request.cookie.get('sessionid')),
+                    '-' + str(request.session.get('cart'))
+            )
+        result = client.service.Authorized(
+                    str(api_id),  # xs:string apiLoginID,
+                    str(api_key),  # xs:string apiKey
+                    str(request.user.id),  # xs:string customerID
+                    cartID,  # xs:string cartID
+                    str(order.id),  # xs:string orderID
+                    order.time,  # xs:dateTime dateAuthorized
+                    )
+        if str(result.ResponseType) == 'OK':
+            captured = client.service.Captured(str(api_id), str(api_key),
+                    str(order.id))
+            if str(captured.ResponseType) == 'OK':
+                pass
+            else:
+                raise CheckoutError(result.Messages)
+        else:
+            raise CheckoutError(result.Messages)
     order.save()
+    del request.session["tax_total"]
 
 

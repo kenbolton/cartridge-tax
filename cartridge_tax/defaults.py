@@ -90,9 +90,17 @@ register_setting(
 register_setting(
         name="TAX_USE_TAXCLOUD",
         label=_("Use TaxCloud.net API"),
-        # XXX Change description when this feature works.
         description=_("Enable use of the TaxCloud.net API. USA \
-                merchants only. (<em>Experimental</em>)"),
+                merchants only."),
+        editable=True,
+        default=False,
+        )
+
+register_setting(
+        name="TAX_USE_TAXCLOUD_AUTHORIZATION",
+        label=_("Use TaxCloud.net to track your sales tax remittence."),
+        description=_("Enable use of the TaxCloud.net API to track \
+                your sales tax. USA \erchants only "),
         editable=True,
         default=False,
         )

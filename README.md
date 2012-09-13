@@ -1,20 +1,25 @@
 # cartridge_tax
 
-cartridge_tax is an implementation of sales tax for the light-weight Django
-ecommerce application Cartridge. A flat sales or value-added tax can be 
-applied to in-state or all sales.
+cartridge_tax is an implementation of sales tax for [Cartridge](http://cartridge.jupo.org/). 
 
-Please fork!
+A flat sales or value-added tax can be applied to in-state or all sales. Tax can optionally be applied to shipping costs.
 
-## ToDo
+For US-based sites, [TaxCloud.net](http://taxcloud.net/)'s tax lookup web service is optional. An experimental integration of TaxCloud's tax authorization and capture exists.
 
-The big pending feature is to calculate tax to the shipping address
-using the TaxCloud.net api for US retailers.
+## DISCLAIMER
 
+This should work out-of-the-box for simple cases. However, your particular implementation
+of Cartridge may require rewriting this or merging components into or out of other projects.
 
 ## Installation
 
-Clone (or fork!) this repository and run `python setup.py install `
+Working in your project's [virtualenv](http://www.virtualenv.org/en/latest/index.html):
+
+```
+git clone https://github.com/kenbolton/cartridge-tax.git
+cd cartridge-tax
+python setup.py install
+```
 
 Add `'cartridge_tax'` to your settings.INSTALLED_APPS before
 `'cartridge.shop'`.

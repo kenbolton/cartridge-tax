@@ -1,5 +1,8 @@
 import suds
+
 from decimal import Decimal
+
+from time import time
 
 from django.utils.translation import ugettext_lazy as _
 
@@ -67,10 +70,13 @@ def tax_billship_handler(request, order_form):
         origin.Zip5 = settings.TAX_SHOP_POSTCODE
         origin.Zip4 = settings.TAX_SHOP_POSTCODE_PLUS4
         if len(str(order['shipping_detail_postcode']).replace('-','')) == 9:
-            shipping_detail_postcode_plus4 = str(order['shipping_detail_postcode'])[:-4]
-            shipping_detail_postcode = str(order['shipping_detail_postcode'])[0:5]
+            shipping_detail_postcode_plus4 = \
+                    str(order['shipping_detail_postcode'])[:-4]
+            shipping_detail_postcode = \
+                    str(order['shipping_detail_postcode'])[0:5]
         else:
-            shipping_detail_postcode = str(order['shipping_detail_postcode'])[0:5]
+            shipping_detail_postcode = \
+                    str(order['shipping_detail_postcode'])[0:5]
             shipping_detail_postcode_plus4 = '0000'
         destination = client.factory.create('Address')
         destination.Address1 = order['shipping_detail_street']
@@ -98,11 +104,8 @@ def tax_billship_handler(request, order_form):
         shipping.Price = float(tax_shipping)
         shipping.Qty = float(1)
         ArrayOfCartItem.CartItem.append(shipping)
-        cartID = str.join(
-                str(request.COOKIES.get('sessionid')),
-                '-' + str(request.session.get('cart'))
-            )
-        request.session["order"]["cartID"] = cartID
+        cartID = str(request.COOKIES.get('sessionid')) +'-' + str(time())
+        request.session['cartID'] = cartID
         request.session.modified = True
         try:
             result = client.service.Lookup(str(api_id), str(api_key),
@@ -112,7 +115,8 @@ def tax_billship_handler(request, order_form):
                 )
             tax_total = 0
         except:
-            raise CheckoutError('Unable to contact the TaxCloud server.')
+            raise CheckoutError("Unable to contact the TaxCloud \
+            server.")
         if str(result.ResponseType) == 'OK' and \
                 result.CartID == cartID:
             for CartItemResponse in result.CartItemsResponse[0]:
@@ -136,15 +140,11 @@ def tax_order_handler(request, order_form, order):
         api_id = settings.TAX_TAXCLOUD_API_ID
         url = "https://api.taxcloud.net/1.0/?wsdl"
         client = suds.client.Client(url)
-        cartID = str.join(
-                    str(request.cookie.get('sessionid')),
-                    '-' + str(request.session.get('cart'))
-            )
         result = client.service.Authorized(
                     str(api_id),  # xs:string apiLoginID,
                     str(api_key),  # xs:string apiKey
                     str(request.user.id),  # xs:string customerID
-                    cartID,  # xs:string cartID
+                    request.session['cartID'],  # xs:string cartID
                     str(order.id),  # xs:string orderID
                     order.time,  # xs:dateTime dateAuthorized
                     )
@@ -158,6 +158,8 @@ def tax_order_handler(request, order_form, order):
         else:
             raise CheckoutError(result.Messages)
     order.save()
-    del request.session["tax_total"]
+    del request.session['tax_type']
+    del request.session['tax_total']
+    del request.session['cartID']
 
 

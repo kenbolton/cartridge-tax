@@ -1,6 +1,5 @@
-# cartridge_tax
-
-cartridge_tax is an implementation of sales tax for [Cartridge](http://cartridge.jupo.org/). 
+#cartridge_tax
+An implementation of sales tax for [Cartridge](http://cartridge.jupo.org/). 
 
 A flat sales or value-added tax can be applied to in-state or all sales. Tax can optionally be applied to shipping costs.
 

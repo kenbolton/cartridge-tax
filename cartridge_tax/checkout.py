@@ -2,7 +2,7 @@ import suds
 
 from decimal import Decimal
 
-from time import time
+from uuid import uuid4
 
 from django.utils.translation import ugettext_lazy as _
 
@@ -13,8 +13,6 @@ from cartridge.shop.utils import set_shipping
 from cartridge.shop.checkout import CheckoutError
 
 from utils import set_salestax
-
-from taxcloudapi import TaxCloudClient
 
 
 def tax_billship_handler(request, order_form):
@@ -54,8 +52,8 @@ def tax_billship_handler(request, order_form):
         else:
             # Sweet: no sales tax
             set_salestax(request, _("Out of state"), Decimal(0))
-    else:  # Use TaxCloud.net SOAP service.
-        #request.session['tax_total'] = 0
+    else:
+        # Use TaxCloud.net SOAP service.
         api_key = settings.TAX_TAXCLOUD_API_KEY
         api_id = settings.TAX_TAXCLOUD_API_ID
         url = "https://api.taxcloud.net/1.0/?wsdl"
@@ -104,7 +102,7 @@ def tax_billship_handler(request, order_form):
         shipping.Price = float(tax_shipping)
         shipping.Qty = float(1)
         ArrayOfCartItem.CartItem.append(shipping)
-        cartID = str(request.COOKIES.get('sessionid')) +'-' + str(time())
+        cartID = uuid4()
         request.session['cartID'] = cartID
         request.session.modified = True
         try:
@@ -129,7 +127,7 @@ def tax_billship_handler(request, order_form):
 
 def tax_order_handler(request, order_form, order):
     """
-    Default order handler - called when the order is complete and
+    Tax order handler - called when the order is complete and
     contains its final data. Implement your own and specify the path
     to import it from via the setting ``SHOP_HANDLER_ORDER``.
     """
@@ -141,12 +139,12 @@ def tax_order_handler(request, order_form, order):
         url = "https://api.taxcloud.net/1.0/?wsdl"
         client = suds.client.Client(url)
         result = client.service.Authorized(
-                    str(api_id),  # xs:string apiLoginID,
-                    str(api_key),  # xs:string apiKey
-                    str(request.user.id),  # xs:string customerID
-                    request.session['cartID'],  # xs:string cartID
-                    str(order.id),  # xs:string orderID
-                    order.time,  # xs:dateTime dateAuthorized
+                    str(api_id),
+                    str(api_key),
+                    str(request.user.id),
+                    request.session['cartID'],
+                    str(order.id),
+                    order.time,
                     )
         if str(result.ResponseType) == 'OK':
             captured = client.service.Captured(str(api_id), str(api_key),
@@ -157,9 +155,10 @@ def tax_order_handler(request, order_form, order):
                 raise CheckoutError(result.Messages)
         else:
             raise CheckoutError(result.Messages)
-    order.save()
+    order.save()aaaaa
     del request.session['tax_type']
     del request.session['tax_total']
-    del request.session['cartID']
-
-
+    try:
+        del request.session['cartID']
+    except:
+        pass

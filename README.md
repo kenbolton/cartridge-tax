@@ -54,7 +54,7 @@ EXTRA_MODEL_FIELDS = (
             {"max_length":"5", "blank": True, "default":"00000", },
             ),
         (
-            "cartridge.shop.models.Order.total_tax",
+            "cartridge.shop.models.Order.tax_total",
             "DecimalField",
             (u"Tax Total",),
             {"null": True, "blank": True, "max_digits": 10,

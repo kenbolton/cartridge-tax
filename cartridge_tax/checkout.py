@@ -155,7 +155,7 @@ def tax_order_handler(request, order_form, order):
                 raise CheckoutError(result.Messages)
         else:
             raise CheckoutError(result.Messages)
-    order.save()aaaaa
+    order.save()
     del request.session['tax_type']
     del request.session['tax_total']
     try:

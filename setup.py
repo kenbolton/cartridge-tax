@@ -3,7 +3,7 @@ from setuptools import find_packages
 
 setup(
     name='cartridge-tax',
-    version='0.0.1a',
+    version='0.0.1b',
     author='Kenneth Bolton',
     author_email='kenbolton@gmail.com',
     packages=find_packages(),
@@ -12,7 +12,7 @@ setup(
     license='LICENSE.txt',
     description='A tax module for Cartridge.',
     long_description=open('README.md').read(),
-    dependency_links = [
+    dependency_links=[
         'http://github.com/htj/suds-htj/tarball/master#egg=suds-0.4.1-htj'
     ],
     install_requires=[

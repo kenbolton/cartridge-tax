@@ -1,1 +1,2 @@
+v0.0.1b, October 5, 2012 -- First beta release.
 v0.0.1a, August 29, 2012 -- Initial release.

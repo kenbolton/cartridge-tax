@@ -1,9 +1,10 @@
 #cartridge_tax
+
 An implementation of sales tax for [Cartridge](http://cartridge.jupo.org/). 
 
 A flat sales or value-added tax can be applied to in-state or all sales. Tax can optionally be applied to shipping costs.
 
-For US-based sites, [TaxCloud.net](http://taxcloud.net/)'s tax lookup web service is optional. An experimental integration of TaxCloud's tax authorization and capture exists.
+For US-based sites, [TaxCloud.net](http://taxcloud.net/)'s tax lookup web service is optional. 
 
 ## DISCLAIMER
 
@@ -13,7 +14,10 @@ of Cartridge may require rewriting this or merging components into or out of oth
 ## Installation
 
 Working in your project's [virtualenv](http://www.virtualenv.org/en/latest/index.html):
-
+```
+pip install cartridge-tax
+```
+or
 ```
 git clone https://github.com/kenbolton/cartridge-tax.git
 cd cartridge-tax
@@ -70,21 +74,15 @@ EXTRA_MODEL_FIELDS = (
 ```
 
 ### Custom OrderForm
-An example for the US.
 
-Assuming your app is named `app`, add `SHOP_CHECKOUT_FORM_CLASS = 'app.forms.OrderForm'`
-to settings. Create `app/forms.py`, and fill with:
+An example for the US is at `cartridge_tax.forms.USOrderForm`. This
+implementation uses the two-letter state abbreviation, so put e.g. NY as
+the value of `TAX_SHOP_STATE` in /admin/conf/settings/. Add to
+your `settings.py`:
+`SHOP_CHECKOUT_FORM_CLASS = 'cartridge_tax.forms.USOrderForm'`
 
-```
-class OrderForm(OrderForm):
-    def __init__(self, request, step, *args,**kwrds):
-        first = step == checkout.CHECKOUT_STEP_FIRST
-        super(OrderForm, self).__init__(request, step, *args, **kwrds)
-        if settings.SHOP_CHECKOUT_STEPS_SPLIT:
-            if first:
-                self.fields['billing_detail_state'].widget = USStateSelect()
-                self.fields['shipping_detail_state'].widget = USStateSelect()
-```
+`USOrderForm` can be used as an example for developing `OrderForm`
+subclasses for other tax jurisdictions.
 
 ## Registered Settings
 

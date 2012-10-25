@@ -131,8 +131,6 @@ def tax_order_handler(request, order_form, order):
     contains its final data. Implement your own and specify the path
     to import it from via the setting ``SHOP_HANDLER_ORDER``.
     """
-    order.tax_total = Decimal(str(request.session.get('tax_total')))
-    order.total += order.tax_total
     if settings.TAX_USE_TAXCLOUD_AUTHORIZATION:
         api_key = settings.TAX_TAXCLOUD_API_KEY
         api_id = settings.TAX_TAXCLOUD_API_ID
@@ -155,7 +153,6 @@ def tax_order_handler(request, order_form, order):
                 raise CheckoutError(result.Messages)
         else:
             raise CheckoutError(result.Messages)
-    order.save()
     del request.session['tax_type']
     del request.session['tax_total']
     try:

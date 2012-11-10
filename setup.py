@@ -3,7 +3,7 @@ from setuptools import find_packages
 
 setup(
     name='cartridge-tax',
-    version='0.0.1b',
+    version='0.0.3',
     author='Kenneth Bolton',
     author_email='kenbolton@gmail.com',
     packages=find_packages(),

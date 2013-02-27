@@ -1,3 +1,10 @@
+#DO NOT USE IN PRODUCTION!
+
+This repository is of educational and historical interest only.
+The basic functionality of this app was added to [Cartridge](http://cartridge.jupo.org/) at version [0.8.0](https://github.com/stephenmcd/cartridge/tree/0.8.0).
+
+The [TaxCloud.net](http://taxcloud.net/) integration may become a separate Cartridge app in the future.
+
 #cartridge_tax
 
 An implementation of sales tax for [Cartridge](http://cartridge.jupo.org/). 
